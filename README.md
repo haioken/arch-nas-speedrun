@@ -49,9 +49,13 @@ btrfs device add /dev/sdd /mnt/raidarray
 Basic guide to BTRFS: https://wiki.tnonline.net/w/Btrfs/Getting_Started
 
 Installation of Arch can be very difficult or quite simple depending on the method you use.
+
 For ease of use, I recommend grabbing the latest Arch installation ISO - https://mirror.aarnet.edu.au/pub/archlinux/iso/2025.09.01/archlinux-x86_64.iso
+
 Download Rufus, and create a bootable USB using the above ISO - https://rufus.ie/en/
+
 Attach the USB to your NAS, select the USB as the boot device, and start up. You'll end up at a terminal with instructions to login.
+
 Login, and install the `archinstall` package, which will allow you to run the modern Arch installer and install to your NAS.
 
 If you want to download primarily with torrent, it's more complicated.
