@@ -1,20 +1,20 @@
 # Speedrun NAS setup
 
-This is an ArchLinux-centric guide, you'll need to change some things to your package manager if you use an inferior distribution ;o)
-This guide will assist with getting a base ArchLinux installation running with docker containers for:
+This is an ArchLinux-centric guide, you'll need to change some things to your package manager if you use an inferior distribution ;o)  
+This guide will assist with getting a base ArchLinux installation running with docker containers for:  
 - Sonarr (For automation of TV show monitoring and queueing of NZBs in NZBGET)
 - Radarr (For automation of Movie monitoring and queueing of NZBs in NZBGET)
 - NZBGet (This receives NZB files, which tell it where in a newsgroup server to download media from. It then downloads them, allowing Sonarr/Radarr to rename and arrange them for JellyFin)
 - JellyFin (Media Server)
 - JellySeerr (Media request framework. This provides a curated way for people to "request" new TV shows, movies etc to be downloaded, while allowing you some control)
 
-Please note that this installation configures the system with NO GUI. maintenance is done via SSH on a terminal.
-There will be web UIs for the various apps, but no system GUI, it is designed to run headless (no monitor, keyboard, mouse)
-This assumes a level of linux competency, and a clean ArchLinux install, if you are installing to an existing system you may need to tweak some things (like UID and GID if they're not already appropriately set)
-Don't stress if you're not a Linux native, I'm happy to help with any questions, and if stuck, given availability, I'll even pop around and assist.
-
-Additional assumptions are:
-
+Please note that this installation configures the system with NO GUI. maintenance is done via SSH on a terminal.  
+There will be web UIs for the various apps, but no system GUI, it is designed to run headless (no monitor, keyboard, mouse)  
+This assumes a level of linux competency, and a clean ArchLinux install, if you are installing to an existing system you may need to tweak some things (like UID and GID if they're not already appropriately set)  
+Don't stress if you're not a Linux native, I'm happy to help with any questions, and if stuck, given availability, I'll even pop around and assist.  
+  
+Additional assumptions are:  
+  
 - You will have or obtain a domain name that you can control the DNS for
 - You will configure your domain to use CloudFlare for your DNS provider
 - You will add the either a wildcard subdomain or the following subdomains A record(s) pointing to your IP:
@@ -36,33 +36,29 @@ For disk configuration, I recommend:
 - 1x nvme SSD for root, 256Gb OK, recommend 512Gb. Our docker containers will reside here, so needs some space.
 - Any number of mechanical disks for bulk storage. These should ideally be configured with software RAID (Redundant array of Independent disks) for a level of disaster mitigation.
 
-If your bulk storage disks will ALL be the same size (IE: All 4tb, or all 6tb, or all 8tb), use a standard "mdraid" type, easier to maintain
-If however your bulk storage disks will differ in size, (IE: 2x6tb + 1x2Tb + 1x4Tb + 1x12Tb) I recommend BTRFS which allows for RAID with different disk sizes.
-bcachefs (which I use) also does this, but it's HIGHLY experimental, and not recommended without being willing to undertake in-depth debugging.
-BTRFS and bcachefs also have the added advantage of being able to add or remove disks at a whim and resize the partition to match.
-I recommend a btrfs RAID1 for simplicity and ease of use. This means you should be able to lose 1 disk without losing any data.
-You can then replace that disk, rebalance and be secure in that your data is still present.
-So you can (for example) have your existing array, add a new 12Tb disk, and then do something like:
+If your bulk storage disks will ALL be the same size (IE: All 4tb, or all 6tb, or all 8tb), use a standard "mdraid" type, easier to maintain  
+If however your bulk storage disks will differ in size, (IE: 2x6tb + 1x2Tb + 1x4Tb + 1x12Tb) I recommend BTRFS which allows for RAID with different disk sizes.  
+bcachefs (which I use) also does this, but it's HIGHLY experimental, and not recommended without being willing to undertake in-depth debugging.  
+BTRFS and bcachefs also have the added advantage of being able to add or remove disks at a whim and resize the partition to match.  
+I recommend a btrfs RAID1 for simplicity and ease of use. This means you should be able to lose 1 disk without losing any data.  
+You can then replace that disk, rebalance and be secure in that your data is still present.  
+Basic guide to BTRFS: https://wiki.tnonline.net/w/Btrfs/Getting_Started  
+So you can (for example) have your existing array, add a new 12Tb disk, and then do something like:  
 ```
 btrfs device add /dev/sdd /mnt/raidarray
 ```
-Basic guide to BTRFS: https://wiki.tnonline.net/w/Btrfs/Getting_Started
 
-Installation of Arch can be very difficult or quite simple depending on the method you use.
-
-For ease of use, I recommend grabbing the latest Arch installation ISO - https://mirror.aarnet.edu.au/pub/archlinux/iso/2025.09.01/archlinux-x86_64.iso
-
-Download Rufus, and create a bootable USB using the above ISO - https://rufus.ie/en/
-
-Attach the USB to your NAS, select the USB as the boot device, and start up. You'll end up at a terminal with instructions to login.
-
-Login, and install the `archinstall` package, which will allow you to run the modern Arch installer and install to your NAS.
-
-If you want to download primarily with torrent, it's more complicated.
-Torrents don't use a standard indexing format like newznab that NZBs use, so you need something that pretends to be an indexer for Sonarr and Radarr, and talks to torrent providers.
-Typically this is another app called `Jackett`, which can also be added to your docker-compose.yaml file.
-I have added a qBittorrent container to the docker-compose.yaml, but replicating my config will not automate torrent downloads
-I have it there for one offs, for example an Anime episode that only have english dubs on NZB - it's rare, but it happens.
+Installation of Arch can be very difficult or quite simple depending on the method you use.  
+For ease of use, I recommend grabbing the latest Arch installation ISO - https://mirror.aarnet.edu.au/pub/archlinux/iso/2025.09.01/archlinux-x86_64.iso  
+Download Rufus, and create a bootable USB using the above ISO - https://rufus.ie/en/  
+Attach the USB to your NAS, select the USB as the boot device, and start up. You'll end up at a terminal with instructions to login.  
+Login, and install the `archinstall` package, which will allow you to run the modern Arch installer and install to your NAS.  
+  
+If you want to download primarily with torrent, it's more complicated.  
+Torrents don't use a standard indexing format like newznab that NZBs use, so you need something that pretends to be an indexer for Sonarr and Radarr, and talks to torrent providers.  
+Typically this is another app called `Jackett`, which can also be added to your docker-compose.yaml file.  
+I have added a qBittorrent container to the docker-compose.yaml, but replicating my config will not automate torrent downloads  
+I have it there for one offs, for example an Anime episode that only have english dubs on NZB - it's rare, but it happens.  
 
 Create user and group called "media", add the "media" user to the media group:
     sudo groupadd --gid 1001 -f media && sudo useradd --uid 1001 -m -g media media
